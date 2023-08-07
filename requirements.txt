@@ -1,0 +1,10 @@
+fastapi[all]
+pydantic==1.10.12
+sqlalchemy
+tqdm
+black
+pytest
+aiosqlite
+aiomysql
+asyncpg
+devsetgo-lib
