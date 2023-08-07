@@ -13,11 +13,13 @@ from pydantic import BaseModel, Field
 from contextlib import asynccontextmanager
 from fastapi.responses import JSONResponse, HTMLResponse, RedirectResponse
 from dsg_lib.logging_config import config_log
+from src.settings import settings
+
 
 config_log(
     logging_directory="logs",
     log_name="log.log",
-    logging_level="ERROR",
+    logging_level="WARNING",
     log_rotation="100 MB",
     log_retention="5 days",
     log_backtrace=True,
@@ -35,9 +37,10 @@ class AsyncDatabase:
     metadata = MetaData()
 
     # Initialize engine
-    SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///:memory:?cache=shared"
+    # DATABASE_URL= "postgresql+asyncpg://postgres:postgres@localhost:5432/postgres"
+    DATABASE_URL = "sqlite+aiosqlite:///:memory:?cache=shared"
     # SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///app.db"
-    engine = create_async_engine(SQLALCHEMY_DATABASE_URL, echo=False)
+    engine = create_async_engine(DATABASE_URL, echo=False)
 
     # Define base model to produce tables
     Base = declarative_base(metadata=metadata)
@@ -195,3 +198,16 @@ async def read_user(user_id: str):
     if not users:
         raise HTTPException(status_code=404, detail="User not found")
     return users[0]
+
+@app.get("/database_type/")
+async def database_type():
+    async with AsyncDatabase().get_db_session() as session:
+        try:
+            result = await session.execute(text('SELECT version();'))  # change this query based on your DBMS
+            return {"database_type": result}  # change this response based on your DBMS
+        except Exception as e:
+            return {"error": str(e)}
+
+@app.get("/config")
+async def get_config():
+    return settings.dict()

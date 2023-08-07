@@ -4,7 +4,7 @@ from tqdm import tqdm
 import asyncio
 import secrets
 
-CONCURRENT_REQUEST_LIMIT = 500  # Limit to prevent PoolTimeout, adjust as needed
+CONCURRENT_REQUEST_LIMIT = 1000  # Limit to prevent PoolTimeout, adjust as needed
 REQUEST_TIMEOUT = 10.0  # Time to wait for server to respond, adjust as needed
 
 
@@ -23,9 +23,9 @@ async def run(n):
             )
             tasks.append(task)
 
-        responses = await asyncio.gather(*tasks)
+        resp = await asyncio.gather(*tasks)
 
-        return responses
+        return resp
 
 
 async def send_request(client, semaphore, *args, **kwargs):
@@ -40,5 +40,5 @@ if __name__ == "__main__":
     end_time = time.time()
     elapsed_time = end_time - start_time
     requests_per_second = n / elapsed_time
-    print(f"Elapsed time: {elapsed_time} seconds")
-    print(f"Requests per second: {requests_per_second}")
+    print(f"Elapsed time: {format(elapsed_time, '.2f')} seconds")  # Limit to 2 decimal places
+    print(f"Requests per second: {format(requests_per_second, '.2f')}")  # Limit to 2 decimal places
