@@ -14,6 +14,7 @@ from contextlib import asynccontextmanager
 from fastapi.responses import JSONResponse, HTMLResponse, RedirectResponse
 from dsg_lib.logging_config import config_log
 from src.settings import settings
+from sqlalchemy import inspect
 
 
 config_log(
@@ -37,9 +38,8 @@ class AsyncDatabase:
     metadata = MetaData()
 
     # Initialize engine
-    # DATABASE_URL= "postgresql+asyncpg://postgres:postgres@localhost:5432/postgres"
-    DATABASE_URL = "sqlite+aiosqlite:///:memory:?cache=shared"
-    # SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///app.db"
+    # DATABASE_URL = "sqlite+aiosqlite:///:memory:?cache=shared"
+    DATABASE_URL = settings.database_uri()
     engine = create_async_engine(DATABASE_URL, echo=False)
 
     # Define base model to produce tables
@@ -199,14 +199,41 @@ async def read_user(user_id: str):
         raise HTTPException(status_code=404, detail="User not found")
     return users[0]
 
+
 @app.get("/database_type/")
 async def database_type():
     async with AsyncDatabase().get_db_session() as session:
         try:
-            result = await session.execute(text('SELECT version();'))  # change this query based on your DBMS
-            return {"database_type": result}  # change this response based on your DBMS
+            # Check for PostgreSQL
+            result = await session.execute(text('SELECT version();'))
+            if 'PostgreSQL' in result.scalar():
+                return {"database_type": "PostgreSQL"}
+
+            # Check for MySQL
+            result = await session.execute(text('SELECT VERSION();'))
+            if 'MySQL' in result.scalar():
+                return {"database_type": "MySQL"}
+
+            # Check for SQLite
+            result = await session.execute(text('SELECT sqlite_version();'))
+            if result.scalars().first() is not None:  # SQLite will return a version number
+                return {"database_type": "SQLite"}
+
+            # Check for Oracle
+            result = await session.execute(text('SELECT * FROM v$version WHERE banner LIKE \'Oracle%\';'))
+            if 'Oracle' in result.scalars().first():
+                return {"database_type": "Oracle"}
+
         except Exception as e:
             return {"error": str(e)}
+
+
+@app.get("/database_dialect/")
+async def database_dialect():
+    async with AsyncDatabase().engine.begin() as conn:
+        dialect = await conn.run_sync(lambda conn: inspect(conn).dialect.name)
+    return {"database_type": dialect}
+
 
 @app.get("/config")
 async def get_config():

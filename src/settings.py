@@ -39,7 +39,11 @@ class Settings(BaseSettings):
     def database_uri(self) -> str:
         if self.database_driver == DatabaseDriverEnum.memory:
             return str(self.database_driver)
-        return f"{self.database_driver}://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}"
+        elif self.database_driver == DatabaseDriverEnum.sqlite:
+            # For SQLite, only the database name is required.
+            return f"{self.database_driver}:///{self.db_name}.db"
+        else:
+            return f"{self.database_driver}://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}"
 
     def dict(self):
         original_dict = super().dict()

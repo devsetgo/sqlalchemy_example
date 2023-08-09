@@ -4,7 +4,7 @@ from tqdm import tqdm
 import asyncio
 import secrets
 
-CONCURRENT_REQUEST_LIMIT = 1000  # Limit to prevent PoolTimeout, adjust as needed
+CONCURRENT_REQUEST_LIMIT = 2000  # Limit to prevent PoolTimeout, adjust as needed
 REQUEST_TIMEOUT = 10.0  # Time to wait for server to respond, adjust as needed
 
 
