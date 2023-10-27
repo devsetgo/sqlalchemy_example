@@ -17,7 +17,7 @@ install:
 # The 'run_prd' target runs the FastAPI application in production mode using uvicorn.
 # It binds the app to all network interfaces (0.0.0.0) on port 5000 and uses 2 workers for handling requests.
 run_prd:
-	uvicorn src.main:app --port 5000 --workers 4
+	uvicorn src.main:app --port 5000 --workers 8
 
 # The 'run_dev' target runs the FastAPI application in development mode with hot-reloading enabled using uvicorn.
 # It also binds the app to all network interfaces (0.0.0.0) on port 5000.
