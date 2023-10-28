@@ -3,13 +3,13 @@ import secrets
 import logging
 from datetime import datetime
 from uuid import uuid4, UUID
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Query
 from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy import Column, Integer, String, MetaData, DateTime, text, func
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.future import select
 from typing import List
-from pydantic import BaseModel, Field
+from pydantic import ConfigDict, BaseModel, Field
 from contextlib import asynccontextmanager
 from fastapi.responses import JSONResponse, HTMLResponse, RedirectResponse
 from dsg_lib.logging_config import config_log
@@ -20,9 +20,9 @@ from sqlalchemy import inspect
 config_log(
     logging_directory="logs",
     log_name="log.log",
-    logging_level="WARNING",
+    logging_level="DEBUG",
     log_rotation="100 MB",
-    log_retention="5 days",
+    log_retention="1 days",
     log_backtrace=True,
     log_format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}",
     log_serializer=False,
@@ -129,19 +129,14 @@ class User(SchemaBase, AsyncDatabase.Base):
 
 class UserBase(BaseModel):
     name: str = Field(..., description="the users name")
-    # email: str = Field(None, description="The users email address")
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserResponse(UserBase):
     id: str
     date_created: datetime
     date_updated: datetime
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserList(BaseModel):
@@ -168,10 +163,13 @@ async def count_users():
 
 
 @app.get("/users/")
-async def read_users():
-    query=select(User)
-    total_count = await DBHandler.count_query(query=query)
-    users = await DBHandler.fetch_query(query=query)
+async def read_users(limit:int = Query(None,alias="limit",ge=1,le=1000), offset:int = 0):
+    if limit is None:
+        limit = 500
+    query = select(User)
+    query_count = select(User)
+    total_count = await DBHandler.count_query(query=query_count)
+    users = await DBHandler.fetch_query(query=query,limit=limit,offset=offset)
     return {
         "query_data": {"total_count": total_count, "count": len(users)},
         "users": users,
@@ -205,23 +203,27 @@ async def database_type():
     async with AsyncDatabase().get_db_session() as session:
         try:
             # Check for PostgreSQL
-            result = await session.execute(text('SELECT version();'))
-            if 'PostgreSQL' in result.scalar():
+            result = await session.execute(text("SELECT version();"))
+            if "PostgreSQL" in result.scalar():
                 return {"database_type": "PostgreSQL"}
 
             # Check for MySQL
-            result = await session.execute(text('SELECT VERSION();'))
-            if 'MySQL' in result.scalar():
+            result = await session.execute(text("SELECT VERSION();"))
+            if "MySQL" in result.scalar():
                 return {"database_type": "MySQL"}
 
             # Check for SQLite
-            result = await session.execute(text('SELECT sqlite_version();'))
-            if result.scalars().first() is not None:  # SQLite will return a version number
+            result = await session.execute(text("SELECT sqlite_version();"))
+            if (
+                result.scalars().first() is not None
+            ):  # SQLite will return a version number
                 return {"database_type": "SQLite"}
 
             # Check for Oracle
-            result = await session.execute(text('SELECT * FROM v$version WHERE banner LIKE \'Oracle%\';'))
-            if 'Oracle' in result.scalars().first():
+            result = await session.execute(
+                text("SELECT * FROM v$version WHERE banner LIKE 'Oracle%';")
+            )
+            if "Oracle" in result.scalars().first():
                 return {"database_type": "Oracle"}
 
         except Exception as e:

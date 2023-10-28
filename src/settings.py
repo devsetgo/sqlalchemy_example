@@ -3,11 +3,9 @@ from enum import Enum
 import secrets
 from functools import lru_cache
 from datetime import datetime  # A Python library used for working with dates and times
-from pydantic import (
-    BaseSettings,  # A library for data validation and settings management
-    PostgresDsn,
-)
-from pydantic import validator
+from pydantic import field_validator, ConfigDict, PostgresDsn
+# from pydantic.functional_validators import field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class DatabaseDriverEnum(
@@ -18,10 +16,7 @@ class DatabaseDriverEnum(
     memory = "sqlite+aiosqlite:///:memory:?cache=shared"
     mysql = "mysql+aiomysql"  # defining the value for mysql driver
     oracle = "oracle+cx_oracle"  # defining the value for oracle driver
-
-    class Config:  # creating a nested class to hold configuration options for the Enum class
-        use_enum_values = True  # setting the configuration option to use the Enum values instead of their names
-
+    model_config = ConfigDict(use_enum_values=True)
 
 
 class Settings(BaseSettings):
@@ -49,8 +44,9 @@ class Settings(BaseSettings):
         original_dict = super().dict()
         original_dict.update({"database_uri": self.database_uri()})
         return original_dict
-    
-    @validator("database_driver", pre=True)
+
+    @field_validator("database_driver", mode="before")
+    @classmethod
     def parse_database_driver(cls, value):
         """
         Validator function to convert the input string to the corresponding enum member value.
@@ -68,13 +64,14 @@ class Settings(BaseSettings):
                 pass
         return value
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        use_enum_values = True
+    model_config = SettingsConfigDict(
+        env_file=".env", env_file_encoding="utf-8", use_enum_values=True
+    )
+
 
 @lru_cache
 def get_settings():
     return Settings()
+
 
 settings = get_settings()
