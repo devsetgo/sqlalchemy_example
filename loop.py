@@ -40,5 +40,9 @@ if __name__ == "__main__":
     end_time = time.time()
     elapsed_time = end_time - start_time
     requests_per_second = n / elapsed_time
-    print(f"Elapsed time: {format(elapsed_time, '.2f')} seconds")  # Limit to 2 decimal places
-    print(f"Requests per second: {format(requests_per_second, '.2f')}")  # Limit to 2 decimal places
+    print(
+        f"Elapsed time: {format(elapsed_time, '.2f')} seconds"
+    )  # Limit to 2 decimal places
+    print(
+        f"Requests per second: {format(requests_per_second, '.2f')}"
+    )  # Limit to 2 decimal places
