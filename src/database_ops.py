@@ -13,11 +13,11 @@ can be used to interact with the database asynchronously.
 import logging
 
 # Importing required modules and libraries
-from typing import List
+from typing import List, Tuple
 
 from fastapi import HTTPException
 from sqlalchemy import func
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.future import select
 
 from .database_connector import AsyncDatabase
@@ -59,14 +59,45 @@ class DatabaseOperations:
             logging.info("Record operation successful")
             return record
         except IntegrityError as ex:
-            logging.error(f"Failed to perform operation on record: {ex}")
+            logging.error(f"IntegrityError on record: {ex}")
+            error_only = str(ex).split("[SQL:")[0]
+            # return {"error":error_only,"details":"see logs for further information"}
             raise HTTPException(
-                status_code=400, detail=f"Operation failed on record: {ex}"
+                status_code=400,
+                detail={
+                    "error": error_only,
+                    "details": "see logs for further information",
+                },
+            )
+
+        except SQLAlchemyError as ex:
+            logging.error(f"SQLAlchemyError on record: {ex}")
+            error_only = str(ex).split("[SQL:")[0]
+            # return {"error":error_only,"details":"see logs for further information"}
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": error_only,
+                    "details": "see logs for further information",
+                },
+            )
+        except Exception as ex:
+            logging.error(f"Exception Failed to perform operation on record: {ex}")
+            error_only = str(ex).split("[SQL:")[0]
+            # return {"error":error_only,"details":"see logs for further information"}
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": error_only,
+                    "details": "see logs for further information",
+                },
             )
 
     # Method to execute multiple database operations (like bulk insert, update) on many records
     @classmethod
     async def execute_many(cls, records: List):
+        # TODO: How to make this report back what records failed. This should be optional to fail all or allow successful records to be committed.
+
         try:
             async with AsyncDatabase().get_db_session() as session:
                 session.add_all(records)
@@ -79,5 +110,12 @@ class DatabaseOperations:
 
                 return records
         except Exception as ex:
+            error_only = str(ex).split("[SQL:")[0]
             logging.error(f"Failed to perform operations on records: {ex}")
-            raise HTTPException(status_code=400, detail="Operations failed on records")
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": error_only,
+                    "details": "see logs for further information",
+                },
+            )
