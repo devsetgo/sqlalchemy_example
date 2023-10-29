@@ -27,8 +27,8 @@ cleanup: isort black autoflake
 help:
 	@echo "Available targets:"
 	@echo "  install       - Install required dependencies"
-	@echo "  run_prod      - Run the FastAPI application in production mode"
-	@echo "  run_dev       - Run the FastAPI application in development mode with hot-reloading"
+	@echo "  prod      	   - Run the FastAPI application in production mode"
+	@echo "  dev           - Run the FastAPI application in development mode with hot-reloading"
 	@echo "  create_tables - Create the necessary tables in the database"
 	@echo "  black         - Format code using black"
 	@echo "  isort         - Sort imports using isort"
@@ -42,10 +42,10 @@ install:
 	$(PIP) install -r $(REQUIREMENTS_PATH)
 
 
-run_prod:
+prd:
 	uvicorn $(SERVICE_PATH).main:app --port 5000 --workers 8
 
-run_dev:
+dev:
 	uvicorn $(SERVICE_PATH).main:app --host 0.0.0.0 --port 5000 --reload 
 
 test:
