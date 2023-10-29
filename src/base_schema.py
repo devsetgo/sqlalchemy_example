@@ -22,6 +22,7 @@ from uuid import uuid4  # For generating unique identifiers
 # Importing required modules from SQLAlchemy for defining database schema
 from sqlalchemy import Column, DateTime, String
 
+
 # Defining a base class for all our database schemas
 class SchemaBase:
     # Each instance in the table will have a unique id which is a string representation of a UUID
@@ -33,4 +34,6 @@ class SchemaBase:
 
     # The date and time when a particular row was last updated.
     # It defaults to the current UTC time whenever the instance is updated.
-    date_updated = Column(DateTime, index=True, default=datetime.utcnow, onupdate=datetime.utcnow)
+    date_updated = Column(
+        DateTime, index=True, default=datetime.utcnow, onupdate=datetime.utcnow
+    )

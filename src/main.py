@@ -6,7 +6,7 @@ from dsg_lib.logging_config import config_log
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
-from sqlalchemy import (Column, String, inspect, text)
+from sqlalchemy import Column, String, inspect, text
 from sqlalchemy.future import select
 
 from src.settings import settings

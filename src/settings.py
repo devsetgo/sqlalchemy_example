@@ -6,23 +6,33 @@ This module provides classes and functions for managing database settings in an 
 
 import secrets  # For generating secure random numbers
 from datetime import datetime  # A Python library used for working with dates and times
-from enum import Enum  # For creating enumerations, which are a set of symbolic names bound to unique constant values
+from enum import (
+    Enum,
+)  # For creating enumerations, which are a set of symbolic names bound to unique constant values
 from functools import lru_cache  # For caching the results of expensive function calls
 
-from pydantic import ConfigDict, field_validator  # Importing required components from Pydantic library
-from pydantic_settings import BaseSettings, SettingsConfigDict  # Pydantic-settings is a Pydantic extension for dealing with settings management
+from pydantic import (  # Importing required components from Pydantic library
+    ConfigDict,
+    field_validator,
+)
+from pydantic_settings import (  # Pydantic-settings is a Pydantic extension for dealing with settings management
+    BaseSettings,
+    SettingsConfigDict,
+)
 
 
-class DatabaseDriverEnum(str, Enum): 
+class DatabaseDriverEnum(str, Enum):
     # Enum class to hold database driver values. It inherits both str and Enum classes.
 
     postgres = "postgresql+asyncpg"
-    sqlite = "sqlite+aiosqlite"  
+    sqlite = "sqlite+aiosqlite"
     memory = "sqlite+aiosqlite:///:memory:?cache=shared"
-    mysql = "mysql+aiomysql"  
-    oracle = "oracle+cx_oracle"  
+    mysql = "mysql+aiomysql"
+    oracle = "oracle+cx_oracle"
 
-    model_config = ConfigDict(use_enum_values=True)  # Configuration dictionary to use enum values
+    model_config = ConfigDict(
+        use_enum_values=True
+    )  # Configuration dictionary to use enum values
 
 
 class Settings(BaseSettings):
@@ -36,7 +46,9 @@ class Settings(BaseSettings):
     db_port: int = 5432
     db_name: str = None
     secret_key: str = secrets.token_hex(128)  # Generate a random secret key
-    date_run: datetime = datetime.utcnow()  # Set the current date and time when the application is run
+    date_run: datetime = (
+        datetime.utcnow()
+    )  # Set the current date and time when the application is run
 
     def database_uri(self) -> str:
         # Method to generate the appropriate database URI based on the selected driver
@@ -51,7 +63,9 @@ class Settings(BaseSettings):
     def dict(self):
         # Method to convert the settings object into a dictionary
         original_dict = super().dict()
-        original_dict.update({"database_uri": self.database_uri()})  # Add the database_uri to the dictionary
+        original_dict.update(
+            {"database_uri": self.database_uri()}
+        )  # Add the database_uri to the dictionary
         return original_dict
 
     @field_validator("database_driver", mode="before")

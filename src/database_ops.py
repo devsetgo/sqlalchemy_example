@@ -11,6 +11,7 @@ can be used to interact with the database asynchronously.
 """
 
 import logging
+
 # Importing required modules and libraries
 from typing import List
 
@@ -18,7 +19,6 @@ from fastapi import HTTPException
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.future import select
-
 
 from .database_connector import AsyncDatabase
 
@@ -60,7 +60,9 @@ class DatabaseOperations:
             return record
         except IntegrityError as ex:
             logging.error(f"Failed to perform operation on record: {ex}")
-            raise HTTPException(status_code=400, detail=f"Operation failed on record: {ex}")
+            raise HTTPException(
+                status_code=400, detail=f"Operation failed on record: {ex}"
+            )
 
     # Method to execute multiple database operations (like bulk insert, update) on many records
     @classmethod
