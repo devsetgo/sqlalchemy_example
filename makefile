@@ -1,25 +1,48 @@
-# .PHONY is a special target in Make, which allows you to define commands that are not file-based targets.
-# It ensures these "phony" targets get executed even if there's a file/folder with the same name.
-.PHONY: install run_prod run_dev create_tables help
+# Variables
+DEV_REQUIREMENTS_PATH = requirements/dev.txt
+LOG_PATH = log
+PIP = $(PYTHON) -m pip
+PORT = 5000
+PYTHON = python3
+PYTEST = $(PYTHON) -m pytest
+REQUIREMENTS_PATH = requirements.txt
+SERVICE_PATH = src
+SQLITE_PATH = _sqlite_db
+TESTS_PATH = src/tests
+VENV_PATH = _venv
+WORKERS = 8
 
-# This target when called displays the available make targets and their descriptions.
+.PHONY: autoflake create_tables help install isort run_dev run_prod test 
+
+autoflake:
+    autoflake --in-place --remove-all-unused-imports -r $(SERVICE_PATH)
+
+create_tables:
+    @echo "Creates necessary tables in the database"
+
 help:
-	@echo "Available targets:"
-	@echo "  install       - Install required dependencies"
-	@echo "  run_prod      - Run the FastAPI application in production mode"
-	@echo "  run_dev       - Run the FastAPI application in development mode with hot-reloading"
-	@echo "  create_tables - Create the necessary tables in the database"
+    @echo "Available targets:"
+    @echo "  autoflake     - Removes unused imports"
+    @echo "  create_tables - Creates necessary tables in the database"
+    @echo "  help          - Displays this help message"
+    @echo "  install       - Installs dependencies"
+    @echo "  isort         - Sorts imports"
+    @echo "  run_dev       - Runs FastAPI application in development mode with hot-reloading"
+    @echo "  run_prod      - Runs FastAPI application in production mode"
+    @echo "  test          - Run tests"
 
-# The 'install' target installs the dependencies listed in the requirements.txt file using pip.
 install:
-	pip install -r requirements.txt
+    $(PIP) install -r $(REQUIREMENTS_PATH)
 
-# The 'run_prd' target runs the FastAPI application in production mode using uvicorn.
-# It binds the app to all network interfaces (0.0.0.0) on port 5000 and uses 2 workers for handling requests.
-run_prd:
-	uvicorn src.main:app --port 5000 --workers 8
+isort:
+    isort $(SERVICE_PATH)
+    isort $(TESTS_PATH)
 
-# The 'run_dev' target runs the FastAPI application in development mode with hot-reloading enabled using uvicorn.
-# It also binds the app to all network interfaces (0.0.0.0) on port 5000.
 run_dev:
-	uvicorn src.main:app --host 0.0.0.0 --port 5000 --reload 
+    uvicorn $(SERVICE_PATH).main:app --host 0.0.0.0 --port $(PORT) --reload 
+
+run_prod:
+    uvicorn $(SERVICE_PATH).main:app --port $(PORT) --workers $(WORKERS)
+
+test:
+    $(PYTEST) 
