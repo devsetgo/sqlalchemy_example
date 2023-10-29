@@ -13,3 +13,4 @@ tqdm==4.66.1 #  From none |   Vulnerabilities: None
 pytest-asyncio
 autoflake
 isort
+xmltodict
