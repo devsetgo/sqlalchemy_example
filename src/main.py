@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import List
 
 from dsg_lib.logging_config import config_log
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, status
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 from sqlalchemy import Column, String, inspect, text
@@ -35,12 +35,22 @@ config_log(
 class User(SchemaBase, AsyncDatabase.Base):
     __tablename__ = "users"
 
-    name = Column(String, unique=False, index=True)
+    name_first = Column(String, unique=False, index=True)
+    name_last = Column(String, unique=False, index=True)
     email = Column(String, unique=True, index=True, nullable=True)
 
 
 class UserBase(BaseModel):
-    name: str = Field(..., description="the users name")
+    name_first: str = Field(
+        ..., 
+        # alias="firstName", 
+        description="the users first or given name", examples=["Bob"]
+    )
+    name_last: str = Field(
+        ...,
+        # alias="lastName",
+        description="the users last or surname name", examples=["Fruit"]
+    )
     email: EmailStr
 
     model_config = ConfigDict(from_attributes=True)
@@ -96,16 +106,25 @@ async def read_users(
     }
 
 
-@app.post("/users/", response_model=UserResponse)
+@app.post("/users/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def create_user(user: UserBase):
-    db_user = User(name=user.name, email=user.email)
+    db_user = User(
+        name_first=user.name_first, name_last=user.name_last, email=user.email
+    )
     created_user = await DatabaseOperations.execute_one(db_user)
     return created_user
 
 
-@app.post("/users/bulk/", response_model=List[UserResponse])
+@app.post(
+    "/users/bulk/",
+    response_model=List[UserResponse],
+    status_code=status.HTTP_201_CREATED,
+)
 async def create_users(user_list: UserList):
-    db_users = [User(name=user.name, email=user.email) for user in user_list.users]
+    db_users = [
+        User(name_first=user.name_first, name_last=user.name_last, email=user.email)
+        for user in user_list.users
+    ]
     created_users = await DatabaseOperations.execute_many(db_users)
     return created_users
 
