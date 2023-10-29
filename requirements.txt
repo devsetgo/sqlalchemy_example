@@ -5,8 +5,11 @@ black==23.10.1 #  From none |   Vulnerabilities: None
 bump-pydantic==0.7.0 #  From none |   Vulnerabilities: None
 devsetgo-lib==0.10.1 #  From none |   Vulnerabilities: None
 fastapi[all]==0.104.0 #  From none |   Vulnerabilities: None
-pydantic==2.4.2 #  From 1.10.12 |   Vulnerabilities: None
+pydantic[email]==2.4.2 #  From 1.10.12 |   Vulnerabilities: None
 pytest==7.4.3 #  From none |   Vulnerabilities: None
 python-dotenv==1.0.0 #  From none |   Vulnerabilities: None
 sqlalchemy==2.0.22 #  From none |   Vulnerabilities: None
 tqdm==4.66.1 #  From none |   Vulnerabilities: None
+pytest-asyncio
+autoflake
+isort
