@@ -4,6 +4,7 @@ from datetime import datetime
 from sqlalchemy import Boolean, Column, DateTime, String
 
 from src.database_functions import Base
+
 # from service.core.demo_user_generator import demo_creator
 # from service.database.common_schema import BaseModel
 # from service.database.db_session import Base, db
