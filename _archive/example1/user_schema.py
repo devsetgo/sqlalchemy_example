@@ -1,21 +1,12 @@
 # -*- coding: utf-8 -*-
-from uuid import uuid4
-
-import logging
-from sqlalchemy import Boolean, Column, String
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy import Column, DateTime, String, desc, func
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.future import select
 from datetime import datetime
-from sqlalchemy.orm import declarative_base
 
+from sqlalchemy import Boolean, Column, DateTime, String
+
+from src.database_functions import Base
 # from service.core.demo_user_generator import demo_creator
 # from service.database.common_schema import BaseModel
 # from service.database.db_session import Base, db
-from src.main import DB
-from src.database_functions import Base
 
 # from src.base_schema import BaseModel
 

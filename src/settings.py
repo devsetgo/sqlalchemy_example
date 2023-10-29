@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
-from enum import Enum
 import secrets
+from datetime import \
+    datetime  # A Python library used for working with dates and times
+from enum import Enum
 from functools import lru_cache
-from datetime import datetime  # A Python library used for working with dates and times
-from pydantic import field_validator, ConfigDict, PostgresDsn
+
+from pydantic import ConfigDict, field_validator
 # from pydantic.functional_validators import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 

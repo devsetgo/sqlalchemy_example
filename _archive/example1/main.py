@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from fastapi import FastAPI
-from fastapi.responses import JSONResponse, HTMLResponse, RedirectResponse
-from src.database_functions import AsyncDatabaseSession, DatabaseSession
 from contextlib import asynccontextmanager
+
 from dsg_lib.logging_config import config_log
+from fastapi import FastAPI
+from fastapi.responses import RedirectResponse
+
+from src.database_functions import DatabaseSession
 
 config_log(logging_level="DEBUG")
 DB = DatabaseSession("sqlite_memory")

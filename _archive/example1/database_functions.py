@@ -63,19 +63,18 @@ Please note that these are simple usage examples, actual usage may vary based on
 """
 
 import logging
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker
+
+from sqlalchemy import MetaData, inspect
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy import MetaData, Table, Column, Integer, String
-from sqlalchemy.schema import CreateTable
-from sqlalchemy.orm import declarative_base
-from sqlalchemy import inspect
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import declarative_base, sessionmaker
 
 metadata = MetaData()
 Base = declarative_base(metadata=metadata)
 
 import logging
-from sqlalchemy import create_engine, MetaData, inspect
+
+from sqlalchemy import MetaData, create_engine, inspect
 from sqlalchemy.orm import sessionmaker
 
 SYNC_DATABASE_CONFIG = {
@@ -107,6 +106,7 @@ SYNC_DATABASE_CONFIG = {
 }
 
 import logging
+
 from sqlalchemy import create_engine, inspect
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
