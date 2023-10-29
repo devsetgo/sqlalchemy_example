@@ -13,7 +13,7 @@ can be used to interact with the database asynchronously.
 import logging
 
 # Importing required modules and libraries
-from typing import List, Tuple
+from typing import List
 
 from fastapi import HTTPException
 from sqlalchemy import func

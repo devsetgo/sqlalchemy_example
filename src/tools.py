@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import json
-from typing import List, Dict, Optional
+
 from email_validator import EmailNotValidError, validate_email
-from fastapi import APIRouter, File, HTTPException, UploadFile, status, Query, Path
+from fastapi import APIRouter, File, HTTPException, Query, UploadFile, status
 from loguru import logger
 from sqlalchemy import inspect, text
 from xmltodict import parse as xml_parse
@@ -13,6 +13,7 @@ from src.settings import settings
 from .database_connector import AsyncDatabase
 
 router = APIRouter()
+
 
 # app route /api/v1/tools
 @router.post("/xml-json")
@@ -62,6 +63,7 @@ async def convert_xml(
             error_exception = f"The syntax of the object is not valid. Error: {e}"
             raise HTTPException(status_code=400, detail=error_exception)
 
+
 # app route /api/v1/tools
 @router.post("/json-xml")
 async def convert_json(
@@ -110,6 +112,7 @@ async def convert_json(
             error_exception = f"The syntax of the object is not valid. Error: {e}"
             raise HTTPException(status_code=400, detail=error_exception)
 
+
 # app route /api/v1/tools
 @router.get("/database_type/")
 async def database_type():
@@ -142,12 +145,14 @@ async def database_type():
         except Exception as e:
             return {"error": str(e)}
 
+
 # app route /api/v1/tools
 @router.get("/database_dialect/")
 async def database_dialect():
     async with AsyncDatabase().engine.begin() as conn:
         dialect = await conn.run_sync(lambda conn: inspect(conn).dialect.name)
     return {"database_type": dialect}
+
 
 # app route /api/v1/tools
 @router.get("/config")
@@ -157,9 +162,13 @@ async def get_config():
 
 @router.post("/email-validation", status_code=status.HTTP_200_OK)
 async def check_email(
-    email_address: str = Query(...,description="the email address to be checked", examples=["bob@example.com"]),
+    email_address: str = Query(
+        ..., description="the email address to be checked", examples=["bob@example.com"]
+    ),
     check_deliverability: bool = Query(True, description="check the dns of the domain"),
-    test_environment: bool = Query(False, description="Used for test environments to bypass dns check"),
+    test_environment: bool = Query(
+        False, description="Used for test environments to bypass dns check"
+    ),
 ):
     """
     This endpoint validates an email address and returns information about it.
@@ -180,12 +189,28 @@ async def check_email(
         raise HTTPException(status_code=400, detail="Email address is required")
 
     try:
-        email_data = validate_email(email_address, check_deliverability=check_deliverability, test_environment=test_environment)
-        
-        required_attrs = ['normalized', 'local_part', 'domain', 'ascii_email', 'ascii_local_part', 'ascii_domain', 'smtputf8', 'mx', 'mx_fallback_type']
+        email_data = validate_email(
+            email_address,
+            check_deliverability=check_deliverability,
+            test_environment=test_environment,
+        )
+
+        required_attrs = [
+            "normalized",
+            "local_part",
+            "domain",
+            "ascii_email",
+            "ascii_local_part",
+            "ascii_domain",
+            "smtputf8",
+            "mx",
+            "mx_fallback_type",
+        ]
         for attr in required_attrs:
             if not hasattr(email_data, attr):
-                raise Exception(f"Attribute {attr} not found in the response of validate_email function")
+                raise Exception(
+                    f"Attribute {attr} not found in the response of validate_email function"
+                )
 
         data = {
             "normalized": email_data.normalized,
@@ -197,11 +222,16 @@ async def check_email(
             "ascii_domain": email_data.ascii_domain,
             "smtputf8": email_data.smtputf8,
             "mx": None if not check_deliverability else email_data.mx,
-            "mx_fallback_type": None if not check_deliverability else email_data.mx_fallback_type,
+            "mx_fallback_type": None
+            if not check_deliverability
+            else email_data.mx_fallback_type,
         }
 
         return data
     except EmailNotValidError as ex:
-        raise HTTPException(status_code=400, detail={"email_address": email_address, "valid": False, "error": str(ex)})
+        raise HTTPException(
+            status_code=400,
+            detail={"email_address": email_address, "valid": False, "error": str(ex)},
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
