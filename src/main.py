@@ -7,17 +7,21 @@ from fastapi import FastAPI, HTTPException, Query, status
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 from sqlalchemy import Column, String
-from sqlalchemy.future import select
+# from sqlalchemy.future import select
+from sqlalchemy import Select
 
-from . import tools
-from .base_schema import SchemaBase
-from .database_connector import AsyncDatabase
-from .database_ops import DatabaseOperations
+from . import tools, health_check
+# from .base_schema import SchemaBase
+from .toolkit import SchemaBase
+# from .database_connector import AsyncDatabase
+from .toolkit import AsyncDatabase
+# from .database_ops import DatabaseOperations
+from .toolkit import DatabaseOperations
 
 config_log(
     logging_directory="logs",
     log_name="log.log",
-    logging_level="DEBUG",
+    logging_level="WARNING",
     log_rotation="100 MB",
     log_retention="1 days",
     log_backtrace=True,
@@ -97,22 +101,26 @@ async def root():
     return RedirectResponse("/docs", status_code=307)
 
 
-@app.get("/users/count/")
+@app.get("/users/count")
 async def count_users():
-    count = await DatabaseOperations.count_query(select(User))
+    count = await DatabaseOperations.count_query(Select(User))
     return {"count": count}
 
 
-@app.get("/users/")
+@app.get("/users")
 async def read_users(
-    limit: int = Query(None, alias="limit", ge=1, le=1000), offset: int = 0
+    limit: int = Query(None, alias="limit", ge=1, le=1000), 
+    offset: int = Query(None, alias="offset")
 ):
     if limit is None:
         limit = 500
 
-    query_count = select(User)
+    if offset is None:
+        offset = 0
+
+    query_count = Select(User)
     total_count = await DatabaseOperations.count_query(query=query_count)
-    query = select(User)
+    query = Select(User)
     users = await DatabaseOperations.fetch_query(
         query=query, limit=limit, offset=offset
     )
@@ -147,7 +155,7 @@ async def create_users(user_list: UserList):
 
 @app.get("/users/{user_id}", response_model=UserResponse)
 async def read_user(user_id: str):
-    users = await DatabaseOperations.fetch_query(select(User).where(User.id == user_id))
+    users = await DatabaseOperations.fetch_query(Select(User).where(User._id == user_id))
     if not users:
         raise HTTPException(status_code=404, detail="User not found")
     return users[0]
@@ -158,5 +166,13 @@ app.include_router(
     tools.router,
     prefix="/api/v1/tools",
     tags=["tools"],
+    responses=router_responses,
+)
+
+# Health router
+app.include_router(
+    health_check.router,
+    prefix="/api/health",
+    tags=["System Health"],
     responses=router_responses,
 )
