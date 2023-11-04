@@ -1,16 +1,21 @@
 # -*- coding: utf-8 -*-
 import json
+import logging
+import time
 
 from email_validator import EmailNotValidError, validate_email
-from fastapi import APIRouter, File, HTTPException, Query, UploadFile, status
+from fastapi import APIRouter, File, HTTPException, UploadFile, status
+from fastapi.responses import ORJSONResponse
 from loguru import logger
+from pydantic import BaseModel, Field
 from sqlalchemy import inspect, text
 from xmltodict import parse as xml_parse
 from xmltodict import unparse as xml_unparse
 
 from src.settings import settings
 
-from .database_connector import AsyncDatabase
+# from .database_connector import AsyncDatabase
+from .toolkit import AsyncDatabase
 
 router = APIRouter()
 
@@ -160,57 +165,38 @@ async def get_config():
     return settings.dict()
 
 
-@router.post("/email-validation", status_code=status.HTTP_200_OK)
-async def check_email(
-    email_address: str = Query(
-        ..., description="the email address to be checked", examples=["bob@example.com"]
-    ),
-    check_deliverability: bool = Query(True, description="check the dns of the domain"),
-    test_environment: bool = Query(
+class EmailVerification(BaseModel):
+    email_address: str = Field(
+        ..., description="The email address to be checked", examples=["test@gmail.com"]
+    )
+    check_deliverability: bool = Field(True, description="Check the dns of the domain")
+    test_environment: bool = Field(
         False, description="Used for test environments to bypass dns check"
-    ),
-):
-    """
-    This endpoint validates an email address and returns information about it.
+    )
 
-    Args:
-        email_address (str): The email address to be validated.
-        check_deliverability (bool): Whether to check the DNS of the domain. Defaults to True.
-        test_environment (bool): Used for test environments to bypass DNS check. Defaults to False.
 
-    Raises:
-        HTTPException: If no email address is provided, if the email is not valid or if any other exception occurs.
+@router.post(
+    "/email-validation", response_class=ORJSONResponse, status_code=status.HTTP_200_OK
+)
+async def check_email(email_verification: EmailVerification):
+    logging.info("Received request for email validation")
 
-    Returns:
-        dict: A dictionary containing various attributes of the validated email.
-    """
+    t0 = time.time()
 
-    if not email_address:
+    if not email_verification.email_address:
         raise HTTPException(status_code=400, detail="Email address is required")
 
     try:
-        email_data = validate_email(
-            email_address,
-            check_deliverability=check_deliverability,
-            test_environment=test_environment,
-        )
+        logging.debug("Validating email: %s", email_verification.email_address)
 
-        required_attrs = [
-            "normalized",
-            "local_part",
-            "domain",
-            "ascii_email",
-            "ascii_local_part",
-            "ascii_domain",
-            "smtputf8",
-            "mx",
-            "mx_fallback_type",
-        ]
-        for attr in required_attrs:
-            if not hasattr(email_data, attr):
-                raise Exception(
-                    f"Attribute {attr} not found in the response of validate_email function"
-                )
+        email_data = validate_email(
+            email_verification.email_address,
+            check_deliverability=email_verification.check_deliverability,
+            test_environment=email_verification.test_environment,
+        )
+        t1 = time.time() - t0
+
+        logging.debug("Validation completed in %f seconds", t1)
 
         data = {
             "normalized": email_data.normalized,
@@ -221,17 +207,28 @@ async def check_email(
             "ascii_local_part": email_data.ascii_local_part,
             "ascii_domain": email_data.ascii_domain,
             "smtputf8": email_data.smtputf8,
-            "mx": None if not check_deliverability else email_data.mx,
+            "mx": None
+            if not email_verification.check_deliverability
+            else email_data.mx,
             "mx_fallback_type": None
-            if not check_deliverability
+            if not email_verification.check_deliverability
             else email_data.mx_fallback_type,
+            "duration": round(t1, 4),
         }
 
         return data
     except EmailNotValidError as ex:
+        t1 = time.time() - t0
+        logging.error("Email validation failed: %s", str(ex))
         raise HTTPException(
             status_code=400,
-            detail={"email_address": email_address, "valid": False, "error": str(ex)},
+            detail={
+                "email_address": email_verification.email_address,
+                "valid": False,
+                "error": str(ex),
+                "duration": round(t1, 4),
+            },
         )
     except Exception as e:
+        logging.critical("Unexpected error occurred: %s", str(e))
         raise HTTPException(status_code=500, detail=str(e))
