@@ -43,7 +43,7 @@ install:
 
 
 prd:
-	uvicorn $(SERVICE_PATH).main:app --port 5000 --workers 8
+	uvicorn $(SERVICE_PATH).main:app --port 5000 --workers 6
 
 dev:
 	uvicorn $(SERVICE_PATH).main:app --host 0.0.0.0 --port 5000 --reload 
