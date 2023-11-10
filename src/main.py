@@ -144,6 +144,37 @@ async def create_users(user_list: UserList):
     created_users = await DatabaseOperations.execute_many(db_users)
     return created_users
 
+import random
+import string
+
+@app.get(
+    "/users/bulk/auto",
+    response_model=List[UserResponse],
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_users_auto(qty:int = Query(100,le=1000,ge=1)):
+    
+    created_users:list=[]
+    for i in range(qty):
+        # Generate a random first name, last name
+        name_first = ''.join(random.choices(string.ascii_lowercase, k=5))
+        name_last = ''.join(random.choices(string.ascii_lowercase, k=5))
+        
+        # Generate a random email
+        random_email_part = ''.join(random.choices(string.ascii_lowercase + string.digits, k=10))
+        email = f'user{random_email_part}@yahoo.com'
+        
+        db_user = User(
+            name_first=name_first, 
+            name_last=name_last, 
+            email=email
+        )
+        created_user = await DatabaseOperations.execute_one(db_user)
+        created_users.append(created_user)
+    
+    return created_users
+
+
 
 @app.get("/users/{user_id}", response_model=UserResponse)
 async def read_user(user_id: str):
