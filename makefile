@@ -11,7 +11,7 @@ LOG_PATH = log
 DEV_SERVER = uvicorn ${SERVICE_PATH}.main:app
 PROD_SERVER = uvicorn ${SERVICE_PATH}.main:app
 PORT = 5000
-WORKERS = 2
+WORKERS = 8
 
 VENV_PATH = _venv
 REQUIREMENTS_PATH = requirements.txt
