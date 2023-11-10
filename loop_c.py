@@ -13,7 +13,9 @@ def call_code():
     lib.http_get.restype = c_long
 
     # Call the function
-    url = "http://localhost:5000/api/health/status".encode('utf-8')
+    # url = "http://localhost:5000/api/health/status".encode('utf-8')
+    url = "http://localhost:5000/users?limit=100&offset=1".encode('utf-8')
+    
     status_code = lib.http_get(url)
 
     return status_code
@@ -41,7 +43,7 @@ def count_processes(process_name):
 
 
 if __name__ == "__main__":
-    n = 10000
+    n = 1000
     loops = 10
     req_list = []
     t0 = time.time()
