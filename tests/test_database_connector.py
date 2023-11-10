@@ -3,7 +3,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from sqlalchemy.exc import SQLAlchemyError
 
-from src.database_connector import AsyncDatabase  # replace with actual module name
+from src.database_connector import \
+    AsyncDatabase  # replace with actual module name
 from src.settings import settings
 
 

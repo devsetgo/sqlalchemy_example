@@ -23,6 +23,7 @@ from sqlalchemy import MetaData
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
+
 from src.settings import settings
 
 

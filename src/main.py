@@ -6,34 +6,26 @@ from dsg_lib.logging_config import config_log
 from fastapi import FastAPI, HTTPException, Query, status
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
-from sqlalchemy import Column, String
 # from sqlalchemy.future import select
-from sqlalchemy import Select
+from sqlalchemy import Column, Select, String
 
-from . import tools, health_check
-# from .base_schema import SchemaBase
-from .toolkit import SchemaBase
-# from .database_connector import AsyncDatabase
-from .toolkit import AsyncDatabase
+from . import health_check, tools
 # from .database_ops import DatabaseOperations
-from .toolkit import DatabaseOperations
+# from .database_connector import AsyncDatabase
+# from .base_schema import SchemaBase
+from .toolkit import AsyncDatabase, DatabaseOperations, SchemaBase
 
 config_log(
     logging_directory="logs",
     log_name="log.log",
-    logging_level="WARNING",
+    logging_level="INFO",
     log_rotation="100 MB",
     log_retention="1 days",
     log_backtrace=True,
     log_format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}",
     log_serializer=False,
-    # log_diagnose=True,
-    # app_name="myapp",
-    # append_app_name=True,
-    # service_id="12345",
-    # append_service_id=True,
+    
 )
-
 
 class User(SchemaBase, AsyncDatabase.Base):
     __tablename__ = "users"

@@ -11,7 +11,6 @@ can be used to interact with the database asynchronously.
 """
 
 import logging
-
 # Importing required modules and libraries
 from typing import List
 

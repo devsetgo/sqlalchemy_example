@@ -2,7 +2,8 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from src.main import app  # replace with actual script containing your FastAPI app
+from src.main import \
+    app  # replace with actual script containing your FastAPI app
 
 # Create a TestClient instance to simulate HTTP requests
 client = TestClient(app)

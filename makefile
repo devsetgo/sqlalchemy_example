@@ -8,6 +8,11 @@ TESTS_PATH = tests
 SQLITE_PATH = _sqlite_db
 LOG_PATH = log
 
+DEV_SERVER = uvicorn ${SERVICE_PATH}.main:app
+PROD_SERVER = uvicorn ${SERVICE_PATH}.main:app
+PORT = 5000
+WORKERS = 2
+
 VENV_PATH = _venv
 REQUIREMENTS_PATH = requirements.txt
 DEV_REQUIREMENTS_PATH = requirements/dev.txt
@@ -23,6 +28,8 @@ black:
 
 cleanup: isort black autoflake
 
+compile:
+	gcc -shared -o http_request.so http_request.c -lcurl -fPIC
 
 help:
 	@echo "Available targets:"
@@ -41,12 +48,12 @@ isort:
 install:
 	$(PIP) install -r $(REQUIREMENTS_PATH)
 
+dev:
+	${DEV_SERVER} --port ${PORT} --reload
 
 prd:
-	uvicorn $(SERVICE_PATH).main:app --port 5000 --workers 6
+	${PROD_SERVER} --port ${PORT} --workers ${WORKERS}
 
-dev:
-	uvicorn $(SERVICE_PATH).main:app --host 0.0.0.0 --port 5000 --reload 
 
 test:
 	$(PYTEST)

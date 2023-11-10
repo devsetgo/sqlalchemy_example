@@ -29,14 +29,17 @@ import datetime
 
 from cpuinfo import get_cpu_info
 from fastapi import APIRouter
-from fastapi.responses import ORJSONResponse
+from fastapi.responses import ORJSONResponse, JSONResponse
 from loguru import logger
-# from starlette_exporter import handle_metrics
 
 # from core.process_checks import get_processes
 from src.settings import settings
+
 # from .database_connector  import AsyncDatabase
 from .toolkit import AsyncDatabase
+
+# from starlette_exporter import handle_metrics
+
 
 router = APIRouter()
 
@@ -46,7 +49,7 @@ router = APIRouter()
 # router.add_route("/metrics", handle_metrics)
 
 
-@router.get("/status", tags=["system-health"], response_class=ORJSONResponse)
+@router.get("/status", tags=["system-health"], response_class=JSONResponse)
 async def health_main() -> dict:
     """
     GET status, uptime, and current datetime
@@ -54,8 +57,9 @@ async def health_main() -> dict:
     Returns:
         dict -- [status: UP, uptime: seconds current_datetime: datetime.now]
     """
-    result: dict = {"status": "UP"}
-    return result
+    status ={"status": "UP"}
+    logger.info(status)
+    return status
 
 
 @router.get("/system-info", tags=["system-health"])

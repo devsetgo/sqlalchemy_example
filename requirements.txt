@@ -15,3 +15,5 @@ python-dotenv==1.0.0 #   Vulnerabilities: None
 sqlalchemy==2.0.22 #   Vulnerabilities: None
 tqdm==4.66.1 #   Vulnerabilities: None
 xmltodict==0.13.0 #  From none |   Vulnerabilities: None
+passlib[bcrypt]==1.7.4 #   Vulnerabilities: None
+pyjwt[crypto]==2.8.0 #   Vulnerabilities: None
